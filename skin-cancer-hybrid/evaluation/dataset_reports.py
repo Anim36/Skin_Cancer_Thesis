@@ -1,0 +1,262 @@
+"""Dataset-wise evaluation reports.
+
+A single pooled accuracy hides the fact that a model can perform well on one
+dataset and badly on another.  This module writes the reports that make the
+per-dataset behaviour explicit, which is a central requirement of the
+thesis: the model is evaluated **per dataset** as well as on any justified
+combined split.
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any, Mapping, Sequence
+
+__all__ = [
+    "write_dataset_report",
+    "build_external_validation_section",
+    "format_metric_table",
+]
+
+
+def _fmt(value: Any, digits: int = 4) -> str:
+    """Format a metric value for a markdown table."""
+    if value is None:
+        return "n/a"
+    if isinstance(value, bool):
+        return str(value)
+    if isinstance(value, (int, float)):
+        try:
+            return f"{float(value):.{digits}f}"
+        except (TypeError, ValueError):
+            return str(value)
+    return str(value)
+
+
+def format_metric_table(
+    metrics: Mapping[str, Any],
+    class_names: Sequence[str],
+) -> str:
+    """Build a markdown table of the per-class metrics."""
+    per_class = metrics.get("per_class", {}) or {}
+    lines = [
+        "| Class | Support | Precision | Recall | Specificity | F1 | ROC-AUC |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ]
+    for name in class_names:
+        entry = per_class.get(name)
+        if not entry:
+            continue
+        lines.append(
+            f"| {name} | {entry.get('support', 0)} | "
+            f"{_fmt(entry.get('precision'))} | {_fmt(entry.get('recall'))} | "
+            f"{_fmt(entry.get('specificity'))} | {_fmt(entry.get('f1'))} | "
+            f"{_fmt(entry.get('roc_auc'))} |"
+        )
+    return "\n".join(lines)
+
+
+def build_external_validation_section(
+    per_dataset: Mapping[str, Any],
+    focus_class: str = "MEL",
+) -> dict[str, Any]:
+    """Summarise the cross-dataset generalisation.
+
+    When a model is trained on a combined split and evaluated on each source
+    dataset separately, the spread between the best and the worst dataset is
+    the honest measure of generalisation.  A large spread indicates a dataset
+    bias - for example the different image acquisition or labelling protocol
+    of one of the collections.
+    """
+    if not per_dataset:
+        return {"available": False, "reason": "no per-dataset results"}
+
+    accuracies = {
+        name: values.get("accuracy")
+        for name, values in per_dataset.items()
+        if values.get("accuracy") is not None
+    }
+    macro_f1s = {
+        name: values.get("macro_f1")
+        for name, values in per_dataset.items()
+        if values.get("macro_f1") is not None
+    }
+
+    focus_sensitivities = {}
+    for name, values in per_dataset.items():
+        focus = values.get("focus") or {}
+        if focus.get("sensitivity") is not None:
+            focus_sensitivities[name] = focus["sensitivity"]
+
+    spread = {}
+    if len(accuracies) > 1:
+        spread = {
+            "accuracy_max": max(accuracies.values()),
+            "accuracy_min": min(accuracies.values()),
+            "accuracy_spread": max(accuracies.values()) - min(accuracies.values()),
+            "macro_f1_spread": (max(macro_f1s.values()) - min(macro_f1s.values()))
+            if len(macro_f1s) > 1
+            else 0.0,
+        }
+
+    return {
+        "available": True,
+        "per_dataset_accuracy": accuracies,
+        "per_dataset_macro_f1": macro_f1s,
+        f"per_dataset_{focus_class.lower()}_sensitivity": focus_sensitivities,
+        "spread": spread,
+        "interpretation": (
+            "A large spread between datasets indicates a dataset bias rather "
+            "than a modelling failure: the datasets differ in image "
+            "acquisition, preprocessing and annotation protocol. This is "
+            "reported explicitly rather than hidden behind a pooled score."
+        ),
+    }
+
+
+def write_dataset_report(
+    report: Mapping[str, Any],
+    output_dir: str | Path,
+    stem: str = "evaluation_report",
+    class_names: Sequence[str] | None = None,
+) -> tuple[Path, Path]:
+    """Write the evaluation report as JSON and Markdown.
+
+    Returns
+    -------
+    tuple
+        ``(json_path, markdown_path)``.
+    """
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    class_names = list(class_names or report.get("class_names", []))
+    metrics = report.get("metrics", {}) or {}
+    summary = report.get("summary", {}) or {}
+    per_dataset = metrics.get("per_dataset", {}) or {}
+
+    json_path = output_dir / f"{stem}.json"
+    with json_path.open("w", encoding="utf-8") as handle:
+        json.dump(report, handle, indent=2, default=str)
+
+    external = build_external_validation_section(per_dataset)
+
+    lines: list[str] = []
+    lines.append(f"# Evaluation report - {metrics.get('split', 'test')} split")
+    lines.append("")
+    lines.append(
+        "Generated by `evaluation/evaluate.py`. All numbers are experimental "
+        "results measured on the stated split of the stated dataset(s)."
+    )
+    lines.append("")
+    lines.append(f"- Checkpoint: `{metrics.get('checkpoint', 'n/a')}`")
+    lines.append(f"- Device: `{metrics.get('device', 'n/a')}`")
+    lines.append(f"- Samples: **{summary.get('num_samples', 0)}**")
+    lines.append("")
+
+    lines.append("## Overall metrics")
+    lines.append("")
+    lines.append("| Metric | Value |")
+    lines.append("| --- | ---: |")
+    for key in (
+        "accuracy",
+        "balanced_accuracy",
+        "macro_f1",
+        "weighted_f1",
+        "kappa",
+        "precision",
+        "recall",
+    ):
+        if key in metrics:
+            lines.append(f"| {key} | {_fmt(metrics[key])} |")
+    lines.append("")
+
+    focus = metrics.get("melanoma_focus", {}) or {}
+    if focus:
+        lines.append("## Melanoma focus (clinically critical class)")
+        lines.append("")
+        lines.append("| Metric | Value |")
+        lines.append("| --- | ---: |")
+        for key in (
+            "sensitivity",
+            "specificity",
+            "precision",
+            "npv",
+            "f1",
+            "prevalence",
+            "true_positives",
+            "false_negatives",
+            "false_positives",
+            "true_negatives",
+        ):
+            if key in focus:
+                lines.append(f"| {key} | {_fmt(focus[key])} |")
+        lines.append("")
+        lines.append(
+            "> Sensitivity is the fraction of melanomas the model detects; "
+            "specificity is the fraction of non-melanomas it correctly "
+            "dismisses. Both matter for screening."
+        )
+        lines.append("")
+
+    if class_names:
+        lines.append("## Per-class performance")
+        lines.append("")
+        lines.append(format_metric_table(metrics, class_names))
+        lines.append("")
+
+    if per_dataset:
+        lines.append("## Per-dataset performance")
+        lines.append("")
+        lines.append(
+            "A pooled score can hide a dataset that the model handles poorly, "
+            "so each source dataset is reported separately."
+        )
+        lines.append("")
+        lines.append("| Dataset | Samples | Accuracy | Macro F1 | Weighted F1 | Balanced acc. |")
+        lines.append("| --- | ---: | ---: | ---: | ---: | ---: |")
+        for name, values in per_dataset.items():
+            lines.append(
+                f"| {name} | {values.get('num_samples', 0)} | "
+                f"{_fmt(values.get('accuracy'))} | {_fmt(values.get('macro_f1'))} | "
+                f"{_fmt(values.get('weighted_f1'))} | "
+                f"{_fmt(values.get('balanced_accuracy'))} |"
+            )
+        lines.append("")
+        if external.get("available") and external.get("spread"):
+            spread = external["spread"]
+            lines.append(
+                f"Accuracy spread across datasets: **{_fmt(spread.get('accuracy_spread'))}** "
+                f"(best {_fmt(spread.get('accuracy_max'))}, "
+                f"worst {_fmt(spread.get('accuracy_min'))})."
+            )
+            lines.append("")
+            lines.append(f"> {external['interpretation']}")
+            lines.append("")
+
+    lines.append("## Interpretation and limitations")
+    lines.append("")
+    lines.append(
+        "- These are experimental results on the stated split. They do not "
+        "constitute a medical diagnosis or a clinically validated device."
+    )
+    lines.append(
+        "- Class imbalance means accuracy alone can be misleading; the macro F1 "
+        "and the per-class recall values are the more informative numbers."
+    )
+    lines.append(
+        "- A dataset-specific breakdown is essential: a large spread between "
+        "datasets points to a domain shift (acquisition or annotation "
+        "protocol) rather than to a modelling error."
+    )
+    lines.append(
+        "- The test split was used once, after the model configuration was "
+        "final. It was never used for hyperparameter selection."
+    )
+    lines.append("")
+
+    md_path = output_dir / f"{stem}.md"
+    md_path.write_text("\n".join(lines), encoding="utf-8")
+
+    return json_path, md_path

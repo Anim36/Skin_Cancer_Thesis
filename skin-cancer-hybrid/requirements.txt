@@ -1,0 +1,34 @@
+# Core deep learning and scientific Python stack.
+# Pinned to versions verified to work together on Python 3.11.
+# NOTE: install PyTorch FIRST from the official index (see SETUP.md), then
+#       install this file. Plain `pip install -r requirements.txt` will pull the
+#       default CUDA build on Linux and the CPU build on Windows.
+
+numpy==1.26.4
+pandas==2.2.3
+scikit-learn==1.5.2
+scipy==1.13.1
+
+torch==2.4.1
+torchvision==0.19.1
+timm==1.0.9
+
+opencv-python==4.10.0.84
+Pillow==10.4.0
+albumentations==1.4.21
+scikit-image==0.24.0
+
+matplotlib==3.9.2
+seaborn==0.13.2
+
+PyYAML==6.0.2
+tqdm==4.66.5
+tensorboard==2.18.0
+# NOTE: 3.6.3 was never published to PyPI (the series jumps 3.6.2 -> 4.0.0).
+# 3.6.2 is the newest 3.6.x release and is API-compatible with the search
+# space used in training/hyperparameter_search.py.
+optuna==3.6.2
+
+# Optional / convenience
+joblib==1.4.2
+imagehash==4.3.1

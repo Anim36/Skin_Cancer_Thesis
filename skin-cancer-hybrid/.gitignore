@@ -1,0 +1,77 @@
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.eggs/
+build/
+dist/
+*.egg
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+
+# ---------------------------------------------------------------------------
+# Data (never commit datasets or derived artefacts)
+# ---------------------------------------------------------------------------
+data/raw/**
+!data/raw/.gitkeep
+data/processed/**
+!data/processed/.gitkeep
+data/splits/*.csv
+!data/splits/.gitkeep
+*.npy
+*.npz
+*.parquet
+
+# ---------------------------------------------------------------------------
+# Training artefacts
+# ---------------------------------------------------------------------------
+checkpoints/**
+!checkpoints/.gitkeep
+logs/**
+!logs/.gitkeep
+runs/**
+!runs/.gitkeep
+experiments/**/*.db
+experiments/**/*.pkl
+*.pth
+*.pt
+*.ckpt
+*.onnx
+
+# ---------------------------------------------------------------------------
+# Reports and outputs (keep the folder, drop the heavy files)
+# ---------------------------------------------------------------------------
+reports/**/*.png
+reports/**/*.jpg
+reports/**/*.csv
+!reports/.gitkeep
+**/gradcam_outputs/**
+
+# ---------------------------------------------------------------------------
+# Tooling
+# ---------------------------------------------------------------------------
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Local overrides
+configs/local.yaml
+*.local.yaml
+.env

@@ -1,0 +1,10 @@
+# Google Colab / Kaggle (Linux + CUDA) installation.
+# Run this FIRST in the notebook, then install the core stack.
+#
+#   !pip install -q torch torchvision --index-url https://download.pytorch.org/whl/cu121
+#   !pip install -q -r requirements-colab.txt
+#
+# Colab preinstalls torch, so the --index-url line above is optional but keeps
+# the CUDA build consistent with the current runtime.
+
+-r requirements.txt

@@ -1,0 +1,93 @@
+# =============================================================================
+# Evaluation configuration
+# =============================================================================
+
+evaluation:
+  batch_size: 32
+  metrics:
+    accuracy: true
+    precision: true
+    recall: true
+    specificity: true
+    f1: true
+    macro_f1: true
+    weighted_f1: true
+    roc_auc: true
+    sensitivity: true
+  average: "macro"                # macro | weighted | micro for precision/recall/F1
+  confusion_matrix: true
+  roc_curves: true
+  pr_curves: true
+  per_class_report: true
+  # Melanoma-specific metrics (clinically the priority class).
+  focus_class: "MEL"
+  # Probability calibration diagnostics.
+  calibration:
+    enabled: true
+    bins: 10
+  # Dataset-wise breakdown is always produced - a single pooled accuracy that
+  # hides per-dataset performance is never reported on its own.
+  per_dataset_report: true
+  external_validation: true
+
+  segmentation:
+    dice: true
+    iou: true
+    pixel_accuracy: true
+    sensitivity: true
+    specificity: true
+    visualize_samples: 10
+
+  plots:
+    dpi: 150
+    figsize: [10, 8]
+    format: "png"
+
+ablation:
+  # All experiments share the SAME split file so comparisons are fair.
+  # The name is resolved per dataset selection at runtime; this value is the
+  # fallback used when no split manifest has been prepared yet.
+  split_file: "data/splits/split_manifest_all.csv"
+  experiments:
+    - name: "A_baseline"
+      description: "EfficientNetV2-S (frozen backbone linear probe)"
+      use_attention: false
+      use_metadata: false
+      use_segmentation: false
+      loss: "weighted_focal"
+      freeze_backbone: true
+    - name: "B_attention"
+      description: "EfficientNetV2-S + CBAM attention"
+      use_attention: true
+      use_metadata: false
+      use_segmentation: false
+      loss: "weighted_focal"
+      freeze_backbone: false
+    - name: "C_metadata_fusion"
+      description: "EfficientNetV2-S + clinical metadata fusion"
+      use_attention: false
+      use_metadata: true
+      use_segmentation: false
+      loss: "weighted_focal"
+      freeze_backbone: false
+    - name: "D_segmentation"
+      description: "U-Net segmentation + EfficientNetV2-S"
+      use_attention: false
+      use_metadata: false
+      use_segmentation: true
+      loss: "weighted_focal"
+      freeze_backbone: false
+    - name: "E_seg_attention"
+      description: "U-Net + EfficientNetV2-S + CBAM attention"
+      use_attention: true
+      use_metadata: false
+      use_segmentation: true
+      loss: "weighted_focal"
+      freeze_backbone: false
+    - name: "F_full_hybrid"
+      description: "U-Net + EfficientNetV2-S + CBAM + metadata fusion + weighted focal loss"
+      use_attention: true
+      use_metadata: true
+      use_segmentation: true
+      loss: "weighted_focal"
+      freeze_backbone: false

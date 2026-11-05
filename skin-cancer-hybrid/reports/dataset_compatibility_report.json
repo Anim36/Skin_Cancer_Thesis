@@ -1,0 +1,123 @@
+{
+  "unified_label_space": [
+    "MEL",
+    "NV",
+    "BCC",
+    "AKIEC",
+    "BKL",
+    "DF",
+    "VASC"
+  ],
+  "canonical_vocabulary": [
+    "MEL",
+    "NV",
+    "BCC",
+    "AKIEC",
+    "BKL",
+    "DF",
+    "VASC",
+    "SCC"
+  ],
+  "class_descriptions": {
+    "MEL": "Melanoma",
+    "NV": "Melanocytic nevus / nevi",
+    "BCC": "Basal cell carcinoma",
+    "AKIEC": "Actinic keratosis / intraepithelial carcinoma",
+    "BKL": "Benign keratosis-like lesions",
+    "DF": "Dermatofibroma",
+    "VASC": "Vascular lesions",
+    "SCC": "Squamous cell carcinoma"
+  },
+  "total_samples": 21,
+  "usable_samples": 21,
+  "class_list_actually_used": [
+    "MEL",
+    "NV",
+    "BCC",
+    "AKIEC",
+    "BKL",
+    "DF",
+    "VASC"
+  ],
+  "datasets": [
+    {
+      "dataset": "ham10000",
+      "available": true,
+      "num_samples": 21,
+      "native_classes": [
+        "mel",
+        "nv",
+        "bcc",
+        "akiec",
+        "bkl",
+        "df",
+        "vasc"
+      ],
+      "mapped_classes": [
+        "AKIEC",
+        "BCC",
+        "BKL",
+        "DF",
+        "MEL",
+        "NV",
+        "VASC"
+      ],
+      "excluded_classes": [],
+      "unmapped_classes": [],
+      "class_counts": {
+        "MEL": 3,
+        "NV": 3,
+        "BCC": 3,
+        "AKIEC": 3,
+        "BKL": 3,
+        "DF": 3,
+        "VASC": 3
+      },
+      "excluded_counts": {},
+      "has_metadata": false,
+      "metadata_fields": [],
+      "fully_compatible": true,
+      "notes": [
+        "metadata file: metadata.csv",
+        "metadata columns: image_id, dx, lesion_id, age, sex, localization",
+        "lesion-level grouping available: 10 lesions have more than one image (these are kept inside a single split)",
+        "NOTE: HAM10000 age/sex/localization are present in some redistributions but are NOT used as metadata features by default - only PAD-UFES-20 metadata is used, to keep the multimodal comparison controlled."
+      ],
+      "root": "C:\\Users\\tajan\\AppData\\Local\\Temp\\pytest-of-tajan\\pytest-49\\test_dataloaders_are_built0\\ham10000"
+    }
+  ],
+  "class_coverage": {
+    "MEL": [
+      "ham10000"
+    ],
+    "NV": [
+      "ham10000"
+    ],
+    "BCC": [
+      "ham10000"
+    ],
+    "AKIEC": [
+      "ham10000"
+    ],
+    "BKL": [
+      "ham10000"
+    ],
+    "DF": [
+      "ham10000"
+    ],
+    "VASC": [
+      "ham10000"
+    ],
+    "SCC": []
+  },
+  "classes_not_present_in_any_dataset": [
+    "SCC"
+  ],
+  "warnings": [],
+  "decisions": [
+    "SCC (squamous cell carcinoma) is an invasive carcinoma and is NOT merged with AKIEC (a pre-invasive actinic keratosis). It is either excluded from the shared 7-class head or trained as its own 8th class.",
+    "Every sample keeps its native label in the manifest; nothing is silently discarded. Samples outside the unified head carry unified_label_valid=False.",
+    "Metadata is used only where the dataset actually provides it (PAD-UFES-20). Missing metadata is never invented.",
+    "The final test split is never used for tuning, threshold selection or hyperparameter search."
+  ]
+}

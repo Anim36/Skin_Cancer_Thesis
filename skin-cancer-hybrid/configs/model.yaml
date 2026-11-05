@@ -1,0 +1,83 @@
+# =============================================================================
+# Model configuration
+# =============================================================================
+# Every component is independently configurable so that the ablation study in
+# training/ablation_study.py can toggle each block on/off while holding the
+# data split and backbone constant.
+# =============================================================================
+
+backbone:
+  # NOTE: in `timm` the original PyTorch port `efficientnetv2_s` ships WITHOUT
+  # ImageNet weights, while the TensorFlow port `tf_efficientnetv2_s` does.
+  # The backbone automatically resolves a pretrained variant of the same
+  # family when the configured name has no checkpoint, but naming the
+  # pretrained-capable model explicitly avoids the resolution step.
+  name: "tf_efficientnetv2_s"      # timm model name (ImageNet pretrained)
+  pretrained: true
+  in_channels: 3
+  num_classes: 0                    # 0 -> feature extractor, head removed
+  drop_rate: 0.3
+  drop_path_rate: 0.1
+  global_pool: "avg"                # avg | max
+  freeze_backbone: false            # false -> fine-tune; true -> frozen
+  # Which blocks to unfreeze when partially fine-tuning.
+  #   -1  : unfreeze everything (full fine-tuning)
+  #   0   : freeze the whole backbone (linear probe)
+  #   n>0 : unfreeze the last n stages only
+  unfreeze_last_n_blocks: 2
+
+attention:
+  enabled: true
+  type: "cbam"                     # cbam | channel | spatial | none
+  reduction_ratio: 16
+  spatial_kernel_size: 7
+  apply_on: "features"             # features | pooled | both
+
+metadata_encoder:
+  enabled: true
+  hidden_dims: [128, 64]
+  dropout: 0.2
+  output_dim: 64
+  batch_norm: true
+  activation: "gelu"
+
+fusion:
+  type: "concat"                   # concat | gated | attention | concat_gated
+  fusion_dim: 256
+  dropout: 0.3
+  # When metadata is unavailable at inference time the image branch is
+  # projected to fusion_dim with a learned "no metadata" token so the model
+  # degrades gracefully instead of crashing.
+  missing_metadata_fallback: "learned_token"
+
+classifier:
+  head_dims: [256, 128]
+  dropout: 0.3
+  batch_norm: true
+  activation: "gelu"
+
+segmentation:
+  encoder: "unet"                  # unet | unet_attention | none
+  in_channels: 3
+  out_channels: 1
+  base_channels: 32
+  depth: 4
+  bilinear: true
+
+hybrid:
+  # Whether the classification pipeline consumes U-Net-segmented images.
+  use_segmentation: false          # set true after a U-Net checkpoint exists
+  unet_checkpoint: null            # path to trained U-Net checkpoint
+  # If no checkpoint is available the model refuses to enable segmentation
+  # rather than silently using a randomly initialised segmentor.
+  require_trained_unet: true
+
+gradcam:
+  target_layer: null               # null -> auto-select last conv before pool
+  target_layer_names:
+    - "conv_head"
+    - "blocks.4"
+    - "features"
+  image_size: 224
+  alpha: 0.5                      # overlay blending weight
+  colormap: "jet"

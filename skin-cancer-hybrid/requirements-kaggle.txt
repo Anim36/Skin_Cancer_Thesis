@@ -1,0 +1,14 @@
+# Kaggle Notebooks (Linux + CUDA T4/P100) installation.
+#
+# In a Kaggle notebook cell:
+#   !pip install -q torch torchvision --index-url https://download.pytorch.org/whl/cu121
+#   !pip install -q -r requirements-kaggle.txt
+#
+# NOTE: Kaggle images ship without a compiler toolchain; torch/torchvision from
+# the PyTorch index are prebuilt wheels and install cleanly. albumentations 1.4+
+# depends on opencv-python-headless on Linux, which is handled below.
+
+-r requirements.txt
+
+# Headless OpenCV avoids the libGL.so.1 dependency that breaks on Kaggle.
+opencv-python-headless==4.10.0.84

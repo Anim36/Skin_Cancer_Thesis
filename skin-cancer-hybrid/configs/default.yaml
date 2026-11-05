@@ -1,0 +1,70 @@
+# =============================================================================
+# Default configuration - master entry point
+# =============================================================================
+# All paths are relative to the project root unless overridden with an absolute
+# path. Every value here can be overridden by a user-local file, e.g.
+#   python scripts/prepare_datasets.py --config configs/default.yaml \
+#          --set data.raw_dir="D:/datasets"
+# =============================================================================
+
+project:
+  name: skin-cancer-hybrid
+  root: "."              # resolved automatically at runtime
+  seed: 42
+  deterministic: true
+  output_dir: "runs"     # all experiment artefacts live here
+
+paths:
+  raw_dir: "data/raw"            # where the four datasets are placed
+  processed_dir: "data/processed"
+  splits_dir: "data/splits"
+  checkpoints_dir: "checkpoints"
+  logs_dir: "logs"
+  reports_dir: "reports"
+  experiments_dir: "experiments"
+
+# -----------------------------------------------------------------------------
+# Dataset selection
+# -----------------------------------------------------------------------------
+datasets:
+  enabled:
+    ham10000: true
+    isic2018: true
+    isic2019: true
+    pad_ufes20: true
+  # Datasets used for the unified "compatible-class" classifier. ISIC 2019 also
+  # supports its native 8-class head; see configs/dataset.yaml for details.
+  unified_head_datasets: [ham10000, isic2018, isic2019, pad_ufes20]
+
+# -----------------------------------------------------------------------------
+# Hardware
+# -----------------------------------------------------------------------------
+hardware:
+  device: "auto"          # auto | cuda | cpu
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+  prefetch_factor: 2
+  # Set to false on machines without a working CUDA runtime.
+  allow_amp: true
+  amp_dtype: "float16"    # float16 | bfloat16
+  cudnn_benchmark: true
+
+# -----------------------------------------------------------------------------
+# Logging
+# -----------------------------------------------------------------------------
+logging:
+  tensorboard: true
+  csv_history: true
+  log_every: 20           # steps between progress prints
+  save_checkpoint_every: 1   # epochs
+
+# -----------------------------------------------------------------------------
+# Includes
+# -----------------------------------------------------------------------------
+# Child configs are merged over this one by utils/config.py.
+includes:
+  - configs/dataset.yaml
+  - configs/model.yaml
+  - configs/training.yaml
+  - configs/evaluation.yaml

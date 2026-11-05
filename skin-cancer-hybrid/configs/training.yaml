@@ -1,0 +1,126 @@
+# =============================================================================
+# Training configuration
+# =============================================================================
+# Values are starting points for experimentation, not tuned optima.
+# =============================================================================
+
+training:
+  epochs: 50
+  batch_size: 16
+  # Gradual unfreezing / fine-tuning schedule
+  freeze_backbone_epochs: 0        # epochs trained with a frozen backbone
+  unfreeze_at_epoch: null          # epoch at which the backbone unfreezes
+
+  optimizer: "adamw"
+  lr_backbone: 1.0e-5
+  lr_head: 1.0e-4
+  weight_decay: 0.01
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+  momentum: 0.9                    # only used if optimizer == sgd
+
+  scheduler: "cosine"              # cosine | step | reduce_on_plateau | none
+  scheduler_config:
+    t_max: 50
+    t_min: 1.0e-6
+    step_size: 20
+    gamma: 0.1
+    patience: 5
+    factor: 0.5
+    monitor: "val_macro_f1"
+    mode: "max"
+  warmup_epochs: 0
+  warmup_start_lr: 1.0e-7
+
+  loss: "weighted_focal"           # weighted_focal | weighted_ce | ce
+  focal:
+    gamma: 2.0
+    alpha: null                    # null -> computed from training frequencies
+    label_smoothing: 0.0
+    reduction: "mean"
+  weighted_ce:
+    label_smoothing: 0.0
+
+  early_stopping:
+    enabled: true
+    patience: 10
+    monitor: "val_macro_f1"
+    mode: "max"
+    min_delta: 0.0005
+
+  grad_clip_norm: 5.0
+  amp: true
+  channels_last: false
+
+  # Checkpointing
+  checkpoint_dir: "checkpoints"
+  save_best: true
+  save_last: true
+  resume: null                    # path to a checkpoint to resume from
+  resume_from_best: false
+
+  class_weighting:
+    strategy: "effective_number"  # effective_number | inverse_frequency | none
+    beta: 0.999
+    cap: 10.0
+    # Class weights are ALWAYS computed from the training split only.
+    normalize_weights: true
+
+unet_training:
+  epochs: 30
+  batch_size: 8
+  lr: 1.0e-4
+  weight_decay: 1.0e-4
+  loss: "dice_bce"                 # dice_bce | bce | dice
+  dice_weight: 1.0
+  bce_weight: 1.0
+  scheduler: "cosine"
+  early_stopping:
+    enabled: true
+    patience: 8
+    monitor: "val_dice"
+    mode: "max"
+  image_size: 224
+
+hyperparameter_search:
+  enabled: false
+  n_trials: 20
+  timeout: null
+  sampler: "tpe"
+  direction: "maximize"
+  metric: "val_macro_f1"
+  study_name: "skin-cancer-hybrid"
+  storage: null                   # e.g. sqlite:///experiments/optuna.db
+  params:
+    lr_head:
+      type: "float"
+      low: 1.0e-5
+      high: 5.0e-4
+      log: true
+    lr_backbone:
+      type: "float"
+      low: 1.0e-6
+      high: 1.0e-4
+      log: true
+    weight_decay:
+      type: "float"
+      low: 1.0e-4
+      high: 1.0e-1
+      log: true
+    dropout:
+      type: "float"
+      low: 0.0
+      high: 0.6
+    batch_size:
+      type: "categorical"
+      choices: [8, 16, 32]
+    focal_gamma:
+      type: "float"
+      low: 0.0
+      high: 4.0
+    head_hidden:
+      type: "categorical"
+      choices: [128, 256, 512]
+    attention_reduction:
+      type: "categorical"
+      choices: [8, 16, 32]
