@@ -1,0 +1,64 @@
+{
+  "raw_dir": "data\\raw",
+  "include_scc": false,
+  "datasets": [
+    {
+      "dataset": "ham10000",
+      "root": "data\\raw\\ham10000",
+      "exists": true,
+      "available": true,
+      "error": "FileNotFoundError: ham10000: no metadata CSV found under F:\\Thesis\\Skin_Cancer_Thesis\\skin-cancer-hybrid\\data\\raw\\ham10000. Expected one of: metadata.csv, HAM10000_metadata.csv, ham10000_metadata.csv, *metadata*.csv"
+    },
+    {
+      "dataset": "isic2018",
+      "root": "data\\raw\\isic2018",
+      "exists": true,
+      "available": true,
+      "error": "RuntimeError: isic2018: no label column found. Available: ['image', 'MEL', 'NV', 'BCC', 'AKIEC', 'BKL', 'DF', 'VASC']"
+    },
+    {
+      "dataset": "isic2019",
+      "root": "data\\raw\\isic2019",
+      "exists": true,
+      "available": true,
+      "error": null,
+      "num_samples": 24464,
+      "notes": [
+        "metadata file: ISIC_2019_Training_GroundTruth.csv",
+        "image dir: ISIC_2019_Training_Input",
+        "one-hot class columns detected: ['MEL', 'NV', 'BCC', 'BKL', 'DF', 'VASC', 'SCC']",
+        "ISIC 2019 contains the 8th class SCC (squamous cell carcinoma). SCC is NOT merged into AKIEC: it is either kept as a separate class (include_scc=True) or excluded from the shared 7-class head (include_scc=False)."
+      ],
+      "native_label_counts": {
+        "NV": 12875,
+        "MEL": 4522,
+        "BCC": 3323,
+        "BKL": 2624,
+        "SCC": 628,
+        "VASC": 253,
+        "DF": 239
+      },
+      "num_native_classes": 7,
+      "group_types": {
+        "lesion": 24464
+      },
+      "num_with_metadata": 0,
+      "metadata_fields": [],
+      "class_list": [
+        "MEL",
+        "NV",
+        "BCC",
+        "BKL",
+        "DF",
+        "VASC"
+      ]
+    },
+    {
+      "dataset": "pad_ufes20",
+      "root": "data\\raw\\pad_ufes20",
+      "exists": true,
+      "available": true,
+      "error": "RuntimeError: pad_ufes20: no label column found. Available: ['patient_id', 'lesion_id', 'smoke', 'drink', 'background_father', 'background_mother', 'age', 'pesticide', 'gender', 'skin_cancer_history', 'cancer_history', 'has_piped_water', 'has_sewage_system', 'fitspatrick', 'region', 'diameter_1', 'diameter_2', 'diagnostic', 'itch', 'grew', 'hurt', 'changed', 'bleed', 'elevation', 'img_id', 'biopsed']"
+    }
+  ]
+}

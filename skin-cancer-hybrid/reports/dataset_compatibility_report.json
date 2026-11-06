@@ -83,7 +83,7 @@
         "lesion-level grouping available: 10 lesions have more than one image (these are kept inside a single split)",
         "NOTE: HAM10000 age/sex/localization are present in some redistributions but are NOT used as metadata features by default - only PAD-UFES-20 metadata is used, to keep the multimodal comparison controlled."
       ],
-      "root": "C:\\Users\\tajan\\AppData\\Local\\Temp\\pytest-of-tajan\\pytest-49\\test_dataloaders_are_built0\\ham10000"
+      "root": "C:\\Users\\HP\\AppData\\Local\\Temp\\pytest-of-HP\\pytest-0\\test_dataloaders_are_built0\\ham10000"
     }
   ],
   "class_coverage": {

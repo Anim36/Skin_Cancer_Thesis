@@ -1,0 +1,125 @@
+{
+  "unified_label_space": [
+    "MEL",
+    "NV",
+    "BCC",
+    "AKIEC",
+    "BKL",
+    "DF",
+    "VASC"
+  ],
+  "canonical_vocabulary": [
+    "MEL",
+    "NV",
+    "BCC",
+    "AKIEC",
+    "BKL",
+    "DF",
+    "VASC",
+    "SCC"
+  ],
+  "class_descriptions": {
+    "MEL": "Melanoma",
+    "NV": "Melanocytic nevus / nevi",
+    "BCC": "Basal cell carcinoma",
+    "AKIEC": "Actinic keratosis / intraepithelial carcinoma",
+    "BKL": "Benign keratosis-like lesions",
+    "DF": "Dermatofibroma",
+    "VASC": "Vascular lesions",
+    "SCC": "Squamous cell carcinoma"
+  },
+  "total_samples": 24464,
+  "usable_samples": 23836,
+  "class_list_actually_used": [
+    "MEL",
+    "NV",
+    "BCC",
+    "BKL",
+    "DF",
+    "VASC"
+  ],
+  "datasets": [
+    {
+      "dataset": "isic2019",
+      "available": true,
+      "num_samples": 24464,
+      "native_classes": [
+        "mel",
+        "nv",
+        "bcc",
+        "bkl",
+        "df",
+        "vasc",
+        "scc"
+      ],
+      "mapped_classes": [
+        "BCC",
+        "BKL",
+        "DF",
+        "MEL",
+        "NV",
+        "VASC"
+      ],
+      "excluded_classes": [
+        "SCC"
+      ],
+      "unmapped_classes": [],
+      "class_counts": {
+        "NV": 12875,
+        "MEL": 4522,
+        "BCC": 3323,
+        "BKL": 2624,
+        "VASC": 253,
+        "DF": 239
+      },
+      "excluded_counts": {
+        "SCC": 628
+      },
+      "has_metadata": false,
+      "metadata_fields": [],
+      "fully_compatible": true,
+      "notes": [
+        "metadata file: ISIC_2019_Training_GroundTruth.csv",
+        "image dir: ISIC_2019_Training_Input",
+        "one-hot class columns detected: ['MEL', 'NV', 'BCC', 'BKL', 'DF', 'VASC', 'SCC']",
+        "ISIC 2019 contains the 8th class SCC (squamous cell carcinoma). SCC is NOT merged into AKIEC: it is either kept as a separate class (include_scc=True) or excluded from the shared 7-class head (include_scc=False)."
+      ],
+      "root": "F:\\Thesis\\Skin_Cancer_Thesis\\skin-cancer-hybrid\\data\\raw\\isic2019"
+    }
+  ],
+  "class_coverage": {
+    "MEL": [
+      "isic2019"
+    ],
+    "NV": [
+      "isic2019"
+    ],
+    "BCC": [
+      "isic2019"
+    ],
+    "AKIEC": [],
+    "BKL": [
+      "isic2019"
+    ],
+    "DF": [
+      "isic2019"
+    ],
+    "VASC": [
+      "isic2019"
+    ],
+    "SCC": []
+  },
+  "classes_not_present_in_any_dataset": [
+    "AKIEC",
+    "SCC"
+  ],
+  "warnings": [
+    "628 sample(s) carry class_index=-1 because their class is not part of the active label space; they are excluded from training but retained in the manifest."
+  ],
+  "decisions": [
+    "SCC (squamous cell carcinoma) is an invasive carcinoma and is NOT merged with AKIEC (a pre-invasive actinic keratosis). It is either excluded from the shared 7-class head or trained as its own 8th class.",
+    "Every sample keeps its native label in the manifest; nothing is silently discarded. Samples outside the unified head carry unified_label_valid=False.",
+    "Metadata is used only where the dataset actually provides it (PAD-UFES-20). Missing metadata is never invented.",
+    "The final test split is never used for tuning, threshold selection or hyperparameter search."
+  ]
+}
